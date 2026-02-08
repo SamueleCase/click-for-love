@@ -788,6 +788,8 @@
 
   function showVideo() {
     videoOverlay.classList.add('active');
+    /* Unmute now — allowed because user just tapped */
+    heroVideo.muted = false;
     setTimeout(launchConfetti, 400);
   }
 
