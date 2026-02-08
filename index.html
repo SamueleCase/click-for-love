@@ -25,6 +25,10 @@
       --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
+      /* Background evolution colors */
+      --bg-1: #ffe0ec;
+      --bg-2: #ffc2d4;
+      --bg-3: #ffb3c6;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -49,9 +53,10 @@
       position: fixed;
       inset: 0;
       z-index: 0;
-      background: linear-gradient(135deg, var(--pink-cloud), var(--pink-pale), #ffb3c6, var(--pink-cloud));
+      background: linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3), var(--bg-1));
       background-size: 300% 300%;
       animation: gradientShift 12s ease infinite;
+      transition: --bg-1 0.8s, --bg-2 0.8s, --bg-3 0.8s;
     }
 
     @keyframes gradientShift {
@@ -60,7 +65,7 @@
       100% { background-position: 0% 50%; }
     }
 
-    /* ── Floating hearts (CSS-only, no JS) ── */
+    /* ── Floating hearts (CSS-only) ── */
     .hearts-bg {
       position: fixed;
       inset: 0;
@@ -99,7 +104,25 @@
       box-shadow:
         0 24px 48px rgba(180, 60, 100, 0.15),
         0 4px 12px rgba(180, 60, 100, 0.08);
-      transition: transform 0.4s var(--ease-smooth);
+      transition: transform 0.4s var(--ease-smooth), box-shadow 0.4s;
+      /* Base visible state */
+      opacity: 1;
+      /* Gyroscope tilt perspective */
+      transform-style: preserve-3d;
+    }
+
+    /* Entrance: applied initially, removed by JS after animation ends */
+    .card.entering {
+      opacity: 0;
+      transform: translateY(40px) scale(0.92);
+      animation: cardEntrance 0.8s var(--ease-bounce) 0.3s forwards;
+    }
+
+    @keyframes cardEntrance {
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     .card.shake {
@@ -127,7 +150,20 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.3s, transform 0.3s var(--ease-smooth);
+      transition: opacity 0.2s;
+    }
+
+    /* Typewriter cursor */
+    .question.typing::after {
+      content: '|';
+      display: inline-block;
+      margin-left: 2px;
+      animation: blink 0.5s step-end infinite;
+      color: var(--pink-mid);
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
     }
 
     /* ── Illustration ── */
@@ -166,6 +202,7 @@
       flex-direction: column;
       gap: 12px;
       align-items: center;
+      position: relative;
     }
 
     /* ── Shared button styles ── */
@@ -214,6 +251,14 @@
         0 6px 20px var(--pink-glow),
         0 2px 6px rgba(201, 24, 74, 0.2);
       z-index: 1;
+      /* Breathing pulse */
+      animation: breathe 2.5s ease-in-out infinite;
+    }
+
+    /* Breathing pulse - intensifies via --breathe-intensity */
+    @keyframes breathe {
+      0%, 100% { box-shadow: 0 6px 20px var(--pink-glow), 0 2px 6px rgba(201,24,74,0.2); }
+      50%  { box-shadow: 0 6px 30px var(--pink-glow), 0 2px 8px rgba(201,24,74,0.3), 0 0 calc(var(--breathe-glow, 0) * 1px) var(--pink-light); }
     }
 
     .btn-yes:active {
@@ -221,7 +266,7 @@
       box-shadow: 0 2px 10px var(--pink-glow);
     }
 
-    /* Glow ring (visible after N "no" clicks) */
+    /* Glow ring */
     .btn-yes .glow {
       position: absolute;
       inset: -3px;
@@ -287,6 +332,21 @@
       100% { transform: scale(0) rotate(25deg); opacity: 0; }
     }
 
+    /* ── No counter badge ── */
+    .no-counter {
+      font-size: 13px;
+      color: var(--pink-mid);
+      opacity: 0;
+      margin-top: 4px;
+      transition: opacity 0.4s;
+      min-height: 20px;
+    }
+
+    .no-counter.visible {
+      opacity: 1;
+      animation: fadeSlideUp 0.4s var(--ease-bounce);
+    }
+
     /* ── Emoji rain drops ── */
     .drop {
       position: fixed;
@@ -302,12 +362,32 @@
       100% { transform: translateY(92vh) rotate(300deg); opacity: 0; }
     }
 
+    /* ── FLASH overlay on Yes ── */
+    .flash {
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+      transition: none;
+    }
+
+    .flash.bang {
+      animation: flashBang 0.5s ease-out forwards;
+    }
+
+    @keyframes flashBang {
+      0%   { opacity: 0.95; }
+      100% { opacity: 0; }
+    }
+
     /* ── VIDEO OVERLAY ── */
     .video-overlay {
       position: fixed;
       inset: 0;
       z-index: 200;
-      background: #000;
+      background: #0a0a0a;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -327,17 +407,22 @@
       inset: 0;
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      z-index: 1;
     }
 
     .video-overlay .video-msg {
-      position: relative;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
       z-index: 2;
       text-align: center;
-      padding: 30px;
+      padding: 32px 24px calc(32px + var(--safe-bottom));
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
       opacity: 0;
       transform: translateY(20px);
-      transition: opacity 0.6s ease 1s, transform 0.6s var(--ease-bounce) 1s;
+      transition: opacity 0.6s ease 1.2s, transform 0.6s var(--ease-bounce) 1.2s;
     }
 
     .video-overlay.active .video-msg {
@@ -347,27 +432,27 @@
 
     .video-msg h2 {
       font-family: 'Dancing Script', cursive;
-      font-size: clamp(32px, 9vw, 46px);
+      font-size: clamp(28px, 7.5vw, 40px);
       color: #fff;
-      text-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 0 40px rgba(230, 57, 112, 0.4);
-      margin-bottom: 10px;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+      margin-bottom: 6px;
     }
 
     .video-msg p {
       font-family: 'Nunito', sans-serif;
-      font-size: clamp(16px, 4.5vw, 20px);
-      color: rgba(255, 255, 255, 0.9);
-      text-shadow: 0 1px 10px rgba(0,0,0,0.4);
-      line-height: 1.5;
+      font-size: clamp(15px, 4vw, 18px);
+      color: rgba(255, 255, 255, 0.92);
+      text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+      line-height: 1.45;
     }
 
     .video-msg .infinity {
       display: inline-block;
-      margin-top: 18px;
-      font-size: clamp(13px, 3.5vw, 15px);
-      opacity: 0.7;
+      margin-top: 12px;
+      font-size: clamp(12px, 3.2vw, 14px);
+      opacity: 0.75;
       color: #fff;
-      animation: fadeSlideUp 0.6s ease 1.8s both;
+      animation: fadeSlideUp 0.6s ease 2s both;
     }
 
     /* ── SUCCESS SCREEN (fallback if no video) ── */
@@ -402,7 +487,7 @@
       padding: 28px;
       transform: scale(0.7);
       opacity: 0;
-      transition: transform 0.7s var(--ease-bounce) 0.2s, opacity 0.5s ease 0.2s;
+      transition: transform 0.7s var(--ease-bounce) 0.3s, opacity 0.5s ease 0.3s;
     }
 
     .success-screen.active .success-content {
@@ -430,14 +515,14 @@
       font-weight: 700;
       color: var(--pink-deep);
       margin: 16px 0 10px;
-      animation: fadeSlideUp 0.6s ease 0.5s both;
+      animation: fadeSlideUp 0.6s ease 0.6s both;
     }
 
     .success-subtitle {
       font-size: clamp(16px, 4.5vw, 19px);
       color: #d44a6a;
       line-height: 1.55;
-      animation: fadeSlideUp 0.6s ease 0.85s both;
+      animation: fadeSlideUp 0.6s ease 0.95s both;
     }
 
     .success-subtitle .infinity {
@@ -445,7 +530,7 @@
       margin-top: 14px;
       font-size: clamp(13px, 3.5vw, 15px);
       opacity: 0.65;
-      animation: fadeSlideUp 0.6s ease 1.3s both;
+      animation: fadeSlideUp 0.6s ease 1.4s both;
     }
 
     @keyframes fadeSlideUp {
@@ -453,7 +538,7 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Confetti canvas ── */
+    /* ── Confetti + burst canvas ── */
     #confetti {
       position: fixed;
       inset: 0;
@@ -461,7 +546,7 @@
       pointer-events: none;
     }
 
-    /* ── A11y: focus-visible ── */
+    /* ── A11y ── */
     .btn:focus-visible {
       outline: 3px solid var(--pink-mid);
       outline-offset: 3px;
@@ -471,7 +556,7 @@
 <body>
 
 <!-- Animated gradient BG -->
-<div class="bg"></div>
+<div class="bg" id="bg"></div>
 
 <!-- Floating hearts (pure CSS, 12 elements) -->
 <div class="hearts-bg" aria-hidden="true">
@@ -490,7 +575,7 @@
 </div>
 
 <!-- Main card -->
-<main class="card" id="card" role="main">
+<main class="card entering" id="card" role="main">
   <div class="question" id="question" aria-live="polite">
     Vuoi essere la mia Valentina? 💕
   </div>
@@ -502,7 +587,7 @@
     </div>
   </div>
 
-  <div class="buttons">
+  <div class="buttons" id="buttonsArea">
     <button class="btn btn-yes" id="btnYes" aria-label="Sì, voglio essere la tua Valentina">
       Sì! 💖
       <span class="glow" id="glow"></span>
@@ -510,10 +595,14 @@
     <button class="btn btn-no" id="btnNo" aria-label="No">
       No...
     </button>
+    <div class="no-counter" id="noCounter" aria-live="polite"></div>
   </div>
 </main>
 
-<!-- Video overlay (shown on "Sì" if video.mp4 exists) -->
+<!-- Flash overlay -->
+<div class="flash" id="flash"></div>
+
+<!-- Video overlay -->
 <div class="video-overlay" id="videoOverlay">
   <video id="heroVideo" playsinline muted loop preload="none">
     <source src="video.mp4" type="video/mp4">
@@ -525,7 +614,7 @@
   </div>
 </div>
 
-<!-- Success screen (fallback when no video) -->
+<!-- Success screen (fallback) -->
 <div class="success-screen" id="successScreen">
   <div class="bg-fill"></div>
   <div class="success-content">
@@ -538,80 +627,168 @@
   </div>
 </div>
 
-<!-- Confetti layer -->
+<!-- Confetti + burst canvas -->
 <canvas id="confetti" aria-hidden="true"></canvas>
 
 <script>
 (function () {
   'use strict';
 
-  /* ── Stage data ── */
+  /* ────────────────── STAGE DATA ────────────────── */
   const STAGES = [
-    { q: 'Vuoi essere la mia Valentina? 💕', s: '🥺👉👈', e: '💝', no: 'No...' },
-    { q: 'Sicura sicura? 🥹',                s: '😢',     e: '💔', no: 'Ehm... no' },
-    { q: 'Dai ripensaci... 🥺',              s: '😭💐',   e: '🌹', no: 'No, dai...' },
-    { q: 'Ti prego... guardami! 😿',         s: '🐱😿',   e: '🫶', no: 'Noo...' },
-    { q: 'Non mi arrendo mai! 💪❤️',         s: '🧎‍♂️💍', e: '✨', no: '...' },
-    { q: "L'unica risposta è SÌ! 😏💖",     s: '😏💘',   e: '🎯', no: null },
+    { q: 'Vuoi essere la mia Valentina? 💕', s: '🥺👉👈',  e: '💝', no: 'No...' },
+    { q: 'Sicura sicura? 🥹',                s: '🐻💔',    e: '😢', no: 'Ehm... no' },
+    { q: 'Dai ripensaci... 🥺',              s: '🧸🌹',    e: '🥀', no: 'No, dai...' },
+    { q: 'Ti prego... guardami! 🥺',         s: '🐶🥺',    e: '🫶', no: 'Noo...' },
+    { q: 'Non mi arrendo mai! 💪❤️',         s: '🧎‍♂️💍',  e: '✨', no: '...' },
+    { q: "L'unica risposta è SÌ! 😏💖",     s: '💃🕺💖',  e: '🎯', no: null },
   ];
 
   const SAD_EMOJIS = ['💔', '😢', '🥺', '😿', '💧'];
 
-  /* ── DOM refs ── */
-  const $ = (s) => document.getElementById(s);
-  const card        = $('card');
-  const questionEl  = $('question');
-  const illusEl     = $('illustration');
-  const btnYes      = $('btnYes');
-  const btnNo       = $('btnNo');
-  const glow        = $('glow');
-  const videoOverlay= $('videoOverlay');
-  const heroVideo   = $('heroVideo');
-  const successScr  = $('successScreen');
-  const confettiCvs = $('confetti');
+  /* No-counter messages */
+  const NO_MSGS = [
+    '', '',
+    'Hai detto no 2 volte... 😤',
+    'Ancora?! Già 3... 🥺',
+    '4 no?! Cuore di pietra! 💔',
+    '',
+  ];
+
+  /* Background evolution per stage */
+  const BG_STAGES = [
+    ['#ffe0ec', '#ffc2d4', '#ffb3c6'],
+    ['#ffd6e6', '#ffb8cc', '#ffa8ba'],
+    ['#ffcce0', '#ffaabe', '#ff96af'],
+    ['#ffc0d8', '#ff99b5', '#ff85a8'],
+    ['#ffb0cc', '#ff80a8', '#ff6b9d'],
+    ['#ffa0c0', '#ff6b9d', '#ff4d6d'],
+  ];
+
+  /* ────────────────── DOM REFS ────────────────── */
+  const $ = (id) => document.getElementById(id);
+  const card         = $('card');
+  const questionEl   = $('question');
+  const illusEl      = $('illustration');
+  const btnYes       = $('btnYes');
+  const btnNo        = $('btnNo');
+  const glow         = $('glow');
+  const noCounter    = $('noCounter');
+  const bgEl         = $('bg');
+  const flashEl      = $('flash');
+  const videoOverlay = $('videoOverlay');
+  const heroVideo    = $('heroVideo');
+  const successScr   = $('successScreen');
+  const confettiCvs  = $('confetti');
 
   let noCount = 0;
-  let done = false;
+  let done    = false;
 
-  /* ── Ripple position for buttons ── */
+  /* ────────────────── RIPPLE TRACKING ────────────────── */
   function trackPointer(e) {
     const btn = e.currentTarget;
     const r = btn.getBoundingClientRect();
-    const x = ((e.touches ? e.touches[0].clientX : e.clientX) - r.left) / r.width * 100;
-    const y = ((e.touches ? e.touches[0].clientY : e.clientY) - r.top) / r.height * 100;
-    btn.style.setProperty('--rx', x + '%');
-    btn.style.setProperty('--ry', y + '%');
+    const cx = (e.touches ? e.touches[0].clientX : e.clientX);
+    const cy = (e.touches ? e.touches[0].clientY : e.clientY);
+    btn.style.setProperty('--rx', ((cx - r.left) / r.width * 100) + '%');
+    btn.style.setProperty('--ry', ((cy - r.top) / r.height * 100) + '%');
   }
   btnYes.addEventListener('pointerdown', trackPointer);
   btnNo.addEventListener('pointerdown', trackPointer);
 
-  /* ── Handle YES ── */
+  /* ────────────────── CARD ENTRANCE ────────────────── */
+  card.addEventListener('animationend', function (e) {
+    if (e.animationName === 'cardEntrance') {
+      card.classList.remove('entering');
+    }
+  });
+
+  /* ────────────────── GYROSCOPE TILT ────────────────── */
+  function initGyro() {
+    let tiltX = 0, tiltY = 0;
+
+    function onOrientation(e) {
+      const g = e.gamma || 0;  /* left/right tilt -90..90 */
+      const b = e.beta  || 0;  /* front/back tilt -180..180 */
+      tiltY = Math.max(-5, Math.min(5, g * 0.12));
+      tiltX = Math.max(-5, Math.min(5, (b - 45) * 0.1));
+      card.style.transform = 'perspective(800px) rotateX(' + (-tiltX) + 'deg) rotateY(' + tiltY + 'deg)';
+    }
+
+    /* iOS 13+ requires permission */
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      /* Will be triggered on first user tap */
+      document.addEventListener('click', function reqGyro() {
+        DeviceOrientationEvent.requestPermission()
+          .then(function (state) {
+            if (state === 'granted') window.addEventListener('deviceorientation', onOrientation);
+          })
+          .catch(function () {});
+        document.removeEventListener('click', reqGyro);
+      }, { once: true });
+    } else if (typeof DeviceOrientationEvent !== 'undefined') {
+      window.addEventListener('deviceorientation', onOrientation);
+    }
+  }
+  initGyro();
+
+  /* ────────────────── TYPEWRITER ────────────────── */
+  function typewrite(text, cb) {
+    questionEl.textContent = '';
+    questionEl.classList.add('typing');
+    let i = 0;
+    function next() {
+      if (i < text.length) {
+        questionEl.textContent += text[i++];
+        setTimeout(next, 30 + Math.random() * 20);
+      } else {
+        questionEl.classList.remove('typing');
+        if (cb) cb();
+      }
+    }
+    next();
+  }
+
+  /* ────────────────── BACKGROUND EVOLUTION ────────────────── */
+  function evolveBg(idx) {
+    const c = BG_STAGES[Math.min(idx, BG_STAGES.length - 1)];
+    bgEl.style.setProperty('--bg-1', c[0]);
+    bgEl.style.setProperty('--bg-2', c[1]);
+    bgEl.style.setProperty('--bg-3', c[2]);
+  }
+
+  /* ────────────────── HANDLE YES ────────────────── */
   btnYes.addEventListener('click', handleYes);
 
   function handleYes() {
     if (done) return;
     done = true;
 
-    if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+    if (navigator.vibrate) navigator.vibrate([80, 40, 80, 40, 80]);
 
-    /* Try to play the video; if it fails, fall back to static screen */
-    heroVideo.src = 'video.mp4';
-    heroVideo.load();
+    /* 1. Flash */
+    flashEl.classList.add('bang');
 
-    const playAttempt = heroVideo.play();
+    /* 2. Heart burst */
+    launchBurst();
 
-    if (playAttempt !== undefined) {
-      playAttempt
-        .then(() => showVideo())
-        .catch(() => showFallback());
-    } else {
-      showFallback();
-    }
+    /* 3. After flash, show video or fallback */
+    setTimeout(function () {
+      heroVideo.src = 'video.mp4';
+      heroVideo.load();
+      var p = heroVideo.play();
+      if (p && p.then) {
+        p.then(showVideo).catch(showFallback);
+      } else {
+        showFallback();
+      }
+    }, 300);
   }
 
   function showVideo() {
     videoOverlay.classList.add('active');
-    launchConfetti();
+    setTimeout(launchConfetti, 400);
   }
 
   function showFallback() {
@@ -619,15 +796,18 @@
     heroVideo.removeAttribute('src');
     heroVideo.load();
     successScr.classList.add('active');
-    launchConfetti();
+    setTimeout(launchConfetti, 400);
   }
 
-  /* ── Handle NO ── */
+  /* ────────────────── HANDLE NO ────────────────── */
   btnNo.addEventListener('click', handleNo);
 
   function handleNo() {
     if (done) return;
     noCount++;
+
+    const idx = Math.min(noCount, STAGES.length - 1);
+    const st  = STAGES[idx];
 
     /* Shake card */
     replayAnim(card, 'shake');
@@ -638,40 +818,48 @@
     /* Pulse yes */
     replayAnim(btnYes, 'pulse');
 
-    const idx = Math.min(noCount, STAGES.length - 1);
-    const st  = STAGES[idx];
+    /* Evolve background */
+    evolveBg(idx);
 
-    /* Cross-fade question */
+    /* Typewriter question */
     questionEl.style.opacity = '0';
-    questionEl.style.transform = 'translateY(-8px)';
-    setTimeout(() => {
-      questionEl.textContent = st.q;
+    setTimeout(function () {
       questionEl.style.opacity = '1';
-      questionEl.style.transform = 'translateY(0)';
-    }, 220);
+      typewrite(st.q);
+    }, 180);
 
     /* Cross-fade illustration */
     illusEl.style.opacity = '0';
     illusEl.style.transform = 'scale(0.85)';
-    setTimeout(() => {
+    setTimeout(function () {
       illusEl.innerHTML =
         '<div><span class="scene">' + st.s + '</span><span class="sub-emoji">' + st.e + '</span></div>';
       illusEl.style.opacity = '1';
       illusEl.style.transform = 'scale(1)';
     }, 250);
 
-    /* Grow YES button progressively */
-    const yesScale = Math.min(1 + noCount * 0.07, 1.38);
+    /* Grow YES button + intensify breathing */
+    var yesScale = Math.min(1 + noCount * 0.07, 1.38);
     btnYes.style.setProperty('--yes-scale', yesScale);
     btnYes.style.transform = 'scale(' + yesScale + ')';
     btnYes.style.padding = (16 + noCount * 1.5) + 'px ' + (56 + noCount * 6) + 'px';
+    btnYes.style.setProperty('--breathe-glow', Math.min(noCount * 10, 40));
 
-    /* Show glow ring after 2 No's */
+    /* Glow ring after 2 No's */
     if (noCount >= 2) glow.classList.add('on');
+
+    /* No counter message */
+    var msg = NO_MSGS[Math.min(idx, NO_MSGS.length - 1)] || '';
+    if (msg) {
+      noCounter.textContent = msg;
+      noCounter.classList.add('visible');
+    }
 
     /* Transform NO button */
     if (st.no === null) {
       /* Final stage — poof away */
+      noCounter.textContent = '';
+      noCounter.classList.remove('visible');
       btnNo.classList.add('poof');
       btnNo.addEventListener('animationend', function once() {
         btnNo.style.display = 'none';
@@ -679,64 +867,120 @@
       });
     } else {
       btnNo.textContent = st.no;
-      const s = Math.max(1 - noCount * 0.1, 0.55);
-      const o = Math.max(1 - noCount * 0.13, 0.4);
+      var s = Math.max(1 - noCount * 0.1, 0.55);
+      var o = Math.max(1 - noCount * 0.12, 0.4);
       btnNo.style.fontSize = Math.max(16 - noCount * 1.2, 11) + 'px';
       btnNo.style.opacity = o;
 
-      if (noCount >= 3) {
-        /* Random horizontal dodge */
-        const dx = (Math.random() - 0.5) * 80;
-        btnNo.style.transform = 'scale(' + s + ') translateX(' + dx + 'px)';
-      } else {
-        btnNo.style.transform = 'scale(' + s + ')';
-      }
+      /* Shrink + random horizontal shift */
+      var dx = noCount >= 2 ? (Math.random() - 0.5) * 80 : 0;
+      btnNo.style.transform = 'scale(' + s + ') translateX(' + dx + 'px)';
     }
   }
 
-  /* ── Emoji rain on No ── */
+  /* ────────────────── EMOJI RAIN ────────────────── */
   function spawnDrops() {
-    for (let i = 0; i < 5; i++) {
-      const el = document.createElement('span');
+    for (var i = 0; i < 5; i++) {
+      var el = document.createElement('span');
       el.className = 'drop';
       el.textContent = SAD_EMOJIS[Math.random() * SAD_EMOJIS.length | 0];
       el.style.left = (8 + Math.random() * 84) + '%';
       el.style.top = '-28px';
       el.style.animationDelay = (Math.random() * 0.25) + 's';
       document.body.appendChild(el);
-      setTimeout(() => el.remove(), 1600);
+      setTimeout(el.remove.bind(el), 1600);
     }
   }
 
-  /* ── Replay CSS animation helper ── */
+  /* ────────────────── HELPERS ────────────────── */
   function replayAnim(el, cls) {
     el.classList.remove(cls);
-    void el.offsetWidth;          /* force reflow */
+    void el.offsetWidth;
     el.classList.add(cls);
   }
 
-  /* ── Confetti (canvas) ── */
-  function launchConfetti() {
-    const ctx = confettiCvs.getContext('2d');
-    let W = confettiCvs.width  = innerWidth;
-    let H = confettiCvs.height = innerHeight;
+  /* ────────────────── HEART BURST (on Yes) ────────────────── */
+  function launchBurst() {
+    var ctx = confettiCvs.getContext('2d');
+    var W = confettiCvs.width  = innerWidth;
+    var H = confettiCvs.height = innerHeight;
+    var cx = W / 2, cy = H / 2;
 
-    const COLORS = [
+    var hearts = [];
+    var N = 40;
+    for (var i = 0; i < N; i++) {
+      var angle = (Math.PI * 2 / N) * i + (Math.random() - 0.5) * 0.3;
+      var speed = 4 + Math.random() * 8;
+      hearts.push({
+        x: cx, y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: 6 + Math.random() * 10,
+        opacity: 1,
+        decay: 0.015 + Math.random() * 0.01,
+        color: ['#ff6b9d','#c9184a','#ff4d6d','#ff85a8','#ffc2d4'][Math.random() * 5 | 0],
+        rot: Math.random() * 360,
+        rv: (Math.random() - 0.5) * 8,
+      });
+    }
+
+    function drawHeart(x, y, sz, color, angle) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle * Math.PI / 180);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      var s = sz * 0.5;
+      ctx.moveTo(0, s * 0.4);
+      ctx.bezierCurveTo(-s, -s * 0.5, -s * 2, s * 0.3, 0, s * 1.5);
+      ctx.bezierCurveTo(s * 2, s * 0.3, s, -s * 0.5, 0, s * 0.4);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function tick() {
+      ctx.clearRect(0, 0, W, H);
+      var alive = false;
+      for (var i = 0; i < hearts.length; i++) {
+        var h = hearts[i];
+        h.x += h.vx;
+        h.y += h.vy;
+        h.vy += 0.15; /* gravity */
+        h.opacity -= h.decay;
+        h.rot += h.rv;
+        if (h.opacity <= 0) continue;
+        alive = true;
+        ctx.globalAlpha = h.opacity;
+        drawHeart(h.x, h.y, h.size, h.color, h.rot);
+      }
+      ctx.globalAlpha = 1;
+      if (alive) requestAnimationFrame(tick);
+    }
+    tick();
+  }
+
+  /* ────────────────── CONFETTI ────────────────── */
+  function launchConfetti() {
+    var ctx = confettiCvs.getContext('2d');
+    var W = confettiCvs.width  = innerWidth;
+    var H = confettiCvs.height = innerHeight;
+
+    var COLORS = [
       '#ff6b9d','#c9184a','#ff85a8','#ffc2d4',
       '#ff4d6d','#e63970','#ffffff','#ffd6e0',
-      '#ff1744','#ff80ab'
+      '#ff1744','#ff80ab','#ffcdd2'
     ];
 
-    const N = Math.min(160, Math.round(W * H / 5000));
-    const pieces = [];
+    var N = Math.min(160, Math.round(W * H / 5000));
+    var pieces = [];
 
-    for (let i = 0; i < N; i++) {
+    for (var i = 0; i < N; i++) {
       pieces.push({
         x: Math.random() * W,
         y: Math.random() * -H,
         r: 3 + Math.random() * 6,
         c: COLORS[Math.random() * COLORS.length | 0],
-        t: Math.random() < 0.33 ? 'h' : (Math.random() < 0.5 ? 'c' : 'r'),
+        t: Math.random() < 0.35 ? 'h' : (Math.random() < 0.5 ? 'c' : 'r'),
         vy: 1.4 + Math.random() * 2.6,
         vx: (Math.random() - 0.5) * 1.8,
         a: Math.random() * 360,
@@ -747,7 +991,7 @@
       });
     }
 
-    let frame = 0;
+    var frame = 0;
 
     function drawHeart(x, y, sz, color, angle) {
       ctx.save();
@@ -755,7 +999,7 @@
       ctx.rotate(angle * Math.PI / 180);
       ctx.fillStyle = color;
       ctx.beginPath();
-      const s = sz * 0.5;
+      var s = sz * 0.5;
       ctx.moveTo(0, s * 0.4);
       ctx.bezierCurveTo(-s, -s * 0.5, -s * 2, s * 0.3, 0, s * 1.5);
       ctx.bezierCurveTo(s * 2, s * 0.3, s, -s * 0.5, 0, s * 0.4);
@@ -766,14 +1010,14 @@
     function tick() {
       ctx.clearRect(0, 0, W, H);
       frame++;
-      let alive = false;
+      var alive = false;
 
-      for (let i = 0; i < pieces.length; i++) {
-        const p = pieces[i];
-        p.y  += p.vy;
-        p.x  += p.vx + Math.sin(p.w) * 0.4;
-        p.w  += p.ws;
-        p.a  += p.va;
+      for (var i = 0; i < pieces.length; i++) {
+        var p = pieces[i];
+        p.y += p.vy;
+        p.x += p.vx + Math.sin(p.w) * 0.4;
+        p.w += p.ws;
+        p.a += p.va;
 
         if (p.y < H + 20) alive = true;
 
@@ -795,7 +1039,6 @@
           ctx.restore();
         }
 
-        /* Respawn while still in loop phase */
         if (frame < 280 && p.y > H + 20) {
           p.y = -10 - Math.random() * 40;
           p.x = Math.random() * W;
@@ -808,7 +1051,7 @@
 
     tick();
 
-    addEventListener('resize', () => {
+    addEventListener('resize', function () {
       W = confettiCvs.width  = innerWidth;
       H = confettiCvs.height = innerHeight;
     });
