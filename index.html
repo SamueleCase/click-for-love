@@ -577,12 +577,12 @@
 <!-- Main card -->
 <main class="card entering" id="card" role="main">
   <div class="question" id="question" aria-live="polite">
-    Vuoi essere la mia Valentina? 💕
+    Vuoi essere la mia Valentina? ❤️
   </div>
 
   <div class="illustration" id="illustration" aria-hidden="true">
     <div>
-      <span class="scene">🥺👉👈</span>
+      <span class="scene">🐻🍒</span>
       <span class="sub-emoji">💝</span>
     </div>
   </div>
@@ -593,7 +593,7 @@
       <span class="glow" id="glow"></span>
     </button>
     <button class="btn btn-no" id="btnNo" aria-label="No">
-      No...
+      GREVEEEE...
     </button>
     <div class="no-counter" id="noCounter" aria-live="polite"></div>
   </div>
@@ -608,9 +608,9 @@
     <source src="video.mp4" type="video/mp4">
   </video>
   <div class="video-msg">
-    <h2>Lo sapevo! 🥰</h2>
-    <p>Sei la cosa più bella<br>che mi sia mai capitata.</p>
-    <span class="infinity">Ti amo ∞</span>
+    <h2>A te!</h2>
+    <p>Che da quando ti conosco <br>migliori sempre le mie giornate.</p>
+    <span class="infinity">Per sempre ∞</span>
   </div>
 </div>
 
@@ -622,7 +622,7 @@
     <h2 class="success-title">Lo sapevo! 🥰</h2>
     <p class="success-subtitle">
       Sei la cosa più bella<br>che mi sia mai capitata.
-      <span class="infinity">Ti amo ∞</span>
+      <span class="infinity">Per sempre ∞</span>
     </p>
   </div>
 </div>
@@ -636,19 +636,20 @@
 
   /* ────────────────── STAGE DATA ────────────────── */
   const STAGES = [
-    { q: 'Vuoi essere la mia Valentina? 💕', s: '🥺👉👈',  e: '💝', no: 'No...' },
-    { q: 'Sicura sicura? 🥹',                s: '🐻💔',    e: '😢', no: 'Ehm... no' },
-    { q: 'Dai ripensaci... 🥺',              s: '🧸🌹',    e: '🥀', no: 'No, dai...' },
-    { q: 'Ti prego... guardami! 🥺',         s: '🐶🥺',    e: '🫶', no: 'Noo...' },
-    { q: 'Non mi arrendo mai! 💪❤️',         s: '🧎‍♂️💍',  e: '✨', no: '...' },
-    { q: "L'unica risposta è SÌ! 😏💖",     s: '💃🕺💖',  e: '🎯', no: null },
+    { q: 'Vuoi essere la mia Valentina? ❤️',            s: '💑',        e: '💝', no: 'greveee' },
+    { q: 'Sicura sicura bebesita? 🥹',                  s: '🥺💔',      e: '😢', no: 'Ehm... no' },
+    { q: 'Dai ripensaci bambolina... 🥺',               s: '🧸💐',      e: '🙏', no: 'No, dai...' },
+    { q: 'Ti prego...tibidada! 🥺',                     s: '😭🙏',      e: '💕', no: 'Noo...' },
+    { q: 'Non mi arrendo, ultima chance cherry! 💪❤️',   s: '🧎‍♂️💍',     e: '✨', no: '...' },
+    { q: "L'unica risposta è SÌ! 😏💖",                  s: '🎉💖',     e: '✅', no: null },
   ];
 
   const SAD_EMOJIS = ['💔', '😢', '🥺', '😿', '💧'];
 
   /* No-counter messages */
   const NO_MSGS = [
-    '', '',
+    '', 
+    '',
     'Hai detto no 2 volte... 😤',
     'Ancora?! Già 3... 🥺',
     '4 no?! Cuore di pietra! 💔',
@@ -657,12 +658,12 @@
 
   /* Background evolution per stage */
   const BG_STAGES = [
-    ['#ffe0ec', '#ffc2d4', '#ffb3c6'],
-    ['#ffd6e6', '#ffb8cc', '#ffa8ba'],
-    ['#ffcce0', '#ffaabe', '#ff96af'],
-    ['#ffc0d8', '#ff99b5', '#ff85a8'],
-    ['#ffb0cc', '#ff80a8', '#ff6b9d'],
-    ['#ffa0c0', '#ff6b9d', '#ff4d6d'],
+    ['#ffe0ec', '#ffc2d4', '#ffb3c6'],  // Stage 1: Rosa tenue e romantico
+    ['#ffc9dd', '#ffa8c0', '#ff8eb0'],  // Stage 2: Rosa medio
+    ['#ffb0cc', '#ff85a8', '#ff6b9d'],  // Stage 3: Rosa intenso
+    ['#ff99bb', '#ff5c8d', '#ff3377'],  // Stage 4: Rosa-fucsia drammatico
+    ['#ff7799', '#ff3366', '#e6194a'],  // Stage 5: Rosso-rosa forte
+    ['#ffd6e0', '#ffaac6', '#ff80ab'],  // Stage 6: Rosa festoso
   ];
 
   /* ────────────────── DOM REFS ────────────────── */
