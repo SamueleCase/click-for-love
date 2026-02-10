@@ -1249,10 +1249,18 @@
     done = true;
     stopSparkles();
 
-    /* Sound */
+    /* Sound — unlock AudioContext in user gesture */
     playChime();
 
     if (navigator.vibrate) navigator.vibrate([80, 40, 80, 40, 80]);
+
+    /* Unlock music in user gesture context (mobile requires this) */
+    bgMusic.src = MUSIC_FILE;
+    bgMusic.volume = 0;
+    bgMusic.play().then(function () {
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
+    }).catch(function () {});
 
     /* Flash */
     flashEl.classList.add('bang');
@@ -1616,7 +1624,7 @@
   var musicPlaying = false;
 
   function startMusic() {
-    bgMusic.src = MUSIC_FILE;
+    bgMusic.currentTime = 0;
     bgMusic.volume = 0.4;
     var p = bgMusic.play();
     if (p && p.then) {
