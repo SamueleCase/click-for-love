@@ -987,11 +987,12 @@
   <div class="bg-fill"></div>
   <div class="success-content">
     <div class="success-heart" id="successHeart">💖</div>
-    <h2 class="success-title">Lo sapevo! 🥰</h2>
+    <h2 class="success-title">Dal 13/10/25, per sempre 💖</h2>
     <p class="success-subtitle">
-      Sei la cosa più bella<br>che mi sia mai capitata.
-      <span class="dedication">La mia persona preferita, ieri, oggi e domani.</span>
-      <span class="infinity">Per sempre ∞</span>
+      Ogni giorno che passa diventi sempre più importante per me.<br>
+      Con te accanto ogni difficoltà sembra più leggera e ogni momento più bello.<br>
+      Grazie per il tuo sostegno, per la tua pazienza e per tutto quello che fai, anche solo sopportarmi 😅.<br>
+      Spero che questo nostro cammino continui così, per sempre.
     </p>
     <button class="btn-gallery" id="btnGallerySuccess">Le nostre foto 📸</button>
     <div class="easter-msg" id="easterMsg"></div>
@@ -1035,7 +1036,7 @@
   ];
 
   /* Messaggio segreto easter egg (tap 5 volte sul cuoricione) */
-  var EASTER_EGG_MSG = 'Ps: ti amo più di quanto le parole possano dire 💝';
+  var EASTER_EGG_MSG = 'Ps: ti amo più di quanto le parole possano dire, (già tu ancora non lo sai) 💝';
 
   /* File musicale di sottofondo */
   var MUSIC_FILE = 'music.mp3';
@@ -1283,6 +1284,14 @@
     heroVideo.volume = 1;
     setTimeout(launchConfetti, 400);
     startMusic();
+
+    /* When video ends, wait 5s then transition to success screen */
+    heroVideo.addEventListener('ended', function () {
+      setTimeout(function () {
+        videoOverlay.classList.remove('active');
+        successScr.classList.add('active');
+      }, 1500);
+    });
   }
 
   function showFallback() {
