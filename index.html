@@ -279,6 +279,14 @@
       align-items: center;
     }
 
+    .buttons.stacked .btn-no {
+      order: 1;
+    }
+
+    .buttons.stacked .no-counter {
+      order: 2;
+    }
+
     /* ── Shared button styles ── */
     .btn {
       border: none;
@@ -377,18 +385,51 @@
       padding: 12px 44px;
       min-height: 46px;
       font-weight: 700;
+      border: 1.5px solid transparent;
       transition:
         transform 0.35s var(--ease-bounce),
         box-shadow 0.25s,
-        background 0.25s,
+        background 0.35s,
         padding 0.35s var(--ease-smooth),
         opacity 0.3s,
-        font-size 0.35s;
+        font-size 0.35s,
+        color 0.35s,
+        border-color 0.35s,
+        min-height 0.35s;
     }
 
     .btn-no:active {
       transform: scale(0.92);
       background: rgba(201, 24, 74, 0.14);
+    }
+
+    /* Initial enticing "teasing" state */
+    .btn-no.teasing {
+      background: rgba(255, 255, 255, 0.65);
+      color: var(--pink-deep);
+      font-size: clamp(16px, 4.5vw, 20px);
+      padding: 14px 44px;
+      min-height: 52px;
+      border-color: rgba(201, 24, 74, 0.2);
+      box-shadow: 0 2px 10px rgba(180, 60, 100, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      order: -1;
+      animation: noTease 4s ease-in-out 1.5s infinite;
+    }
+
+    .btn-no.teasing:active {
+      animation-play-state: paused;
+      transform: scale(0.95);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    @keyframes noTease {
+      0%, 84%, 100% { transform: rotate(0) scale(1); }
+      87% { transform: rotate(-3deg) scale(1.04); }
+      90% { transform: rotate(2.5deg) scale(1.04); }
+      93% { transform: rotate(-1.5deg) scale(1.02); }
+      96% { transform: rotate(0) scale(1); }
     }
 
     .btn-no.poof {
@@ -414,6 +455,25 @@
     .no-counter.visible {
       opacity: 1;
       animation: fadeSlideUp 0.4s var(--ease-bounce);
+    }
+
+    /* ── No hint (curiosity trigger) ── */
+    .no-hint {
+      width: 100%;
+      text-align: center;
+      font-size: 12px;
+      color: var(--pink-mid);
+      font-style: italic;
+      opacity: 0;
+      min-height: 18px;
+      pointer-events: none;
+      animation: hintAppear 0.6s ease 3.5s forwards;
+      order: 3;
+    }
+
+    @keyframes hintAppear {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 0.75; transform: translateY(0); }
     }
 
     /* ── Emoji rain drops ── */
@@ -893,14 +953,15 @@
   </div>
 
   <div class="buttons" id="buttonsArea">
+    <button class="btn btn-no teasing" id="btnNo" aria-label="No">
+      No... 🫣
+    </button>
     <button class="btn btn-yes" id="btnYes" aria-label="Sì, voglio essere la tua Valentina">
       Sì! 💖
       <span class="glow" id="glow"></span>
     </button>
-    <button class="btn btn-no" id="btnNo" aria-label="No">
-      GREVEEEE...
-    </button>
     <div class="no-counter" id="noCounter" aria-live="polite"></div>
+    <div class="no-hint" id="noHint">psst... prova a premere No 👀</div>
   </div>
 </main>
 
@@ -992,11 +1053,12 @@
   ];
 
   var SAD_EMOJIS = ['💔', '😢', '🥺', '😿', '💧'];
+  var FIRST_NO_EMOJIS = ['😂', '🤣', '😏', '🫢', '🙈'];
 
   var NO_MSGS = [
     '',
-    'Sul serio?! 😤',
-    'Hai detto no 2 volte... 😤',
+    'AHAHAH lo sapevo! 😂',
+    'Dai dai, ci ripensi? 😏',
     'Ancora?! Già 3... 🥺',
     '4 no?! Cuore di pietra! 💔',
     'Ok, non hai scelta! 😏',
@@ -1038,6 +1100,8 @@
   var btnGallerySuccess = $('btnGallerySuccess');
   var musicToggle     = $('musicToggle');
   var bgMusic         = $('bgMusic');
+  var noHint          = $('noHint');
+  var buttonsArea     = $('buttonsArea');
 
   var noCount = 0;
   var done    = false;
@@ -1245,6 +1309,13 @@
     var idx = Math.min(noCount, STAGES.length - 1);
     var st  = STAGES[idx];
 
+    /* First No: transition from teasing to degraded state */
+    if (noCount === 1) {
+      btnNo.classList.remove('teasing');
+      buttonsArea.classList.add('stacked');
+      noHint.style.display = 'none';
+    }
+
     /* Sound + haptic */
     playPop();
     if (navigator.vibrate) navigator.vibrate(30 + noCount * 20);
@@ -1252,8 +1323,12 @@
     /* Shake card */
     replayAnim(card, 'shake');
 
-    /* Sad emoji rain */
-    spawnDrops();
+    /* Emoji rain: funny on first No, sad after */
+    if (noCount === 1) {
+      spawnDrops(FIRST_NO_EMOJIS);
+    } else {
+      spawnDrops();
+    }
 
     /* Pulse yes */
     replayAnim(btnYes, 'pulse');
@@ -1315,11 +1390,12 @@
   }
 
   /* ────────────────── EMOJI RAIN ────────────────── */
-  function spawnDrops() {
+  function spawnDrops(emojis) {
+    var list = emojis || SAD_EMOJIS;
     for (var i = 0; i < 5; i++) {
       var el = document.createElement('span');
       el.className = 'drop';
-      el.textContent = SAD_EMOJIS[Math.random() * SAD_EMOJIS.length | 0];
+      el.textContent = list[Math.random() * list.length | 0];
       el.style.left = (8 + Math.random() * 84) + '%';
       el.style.top = '-28px';
       el.style.animationDelay = (Math.random() * 0.25) + 's';
